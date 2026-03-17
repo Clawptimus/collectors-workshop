@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Article Library | The Collector's Workshop</title>
+  <meta name="description" content="Browse our complete library of collector guides, repair tutorials, and restoration advice for vintage and antique objects.">
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="../index.html" class="brand">The Collector's Workshop</a>
+      <nav>
+        <ul class="nav-menu">
+          <li><a href="../index.html">Home</a></li>
+          <li><a href="index.html" class="active">Articles</a></li>
+          <li><a href="../hubs/collector-guides.html">Collector Guides</a></li>
+          <li><a href="../hubs/repair-restoration.html">Repair & Restoration</a></li>
+          <li><a href="../hubs/retro-tech.html">Retro Tech</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <div class="breadcrumbs">
+    <div class="container">
+      <a href="../index.html">Home</a> <span>/</span> Articles
+    </div>
+  </div>
+
+  <section class="hero" style="padding: 2rem 0;">
+    <div class="container">
+      <h1>Article Library</h1>
+      <p class="hero-subtitle">Expert guides for collecting, restoring, and mastering vintage and antique objects</p>
+      
+      <div class="search-container">
+        <input type="text" id="search-box" class="search-box" placeholder="Search articles by title, topic, or keyword...">
+        <div id="search-results" class="search-results"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div style="margin-bottom: 2rem;">
+        <h3>Filter by Hub</h3>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
+          <a href="?hub=all" class="tag" data-filter="all" style="cursor: pointer;">All</a>
+          <a href="?hub=collector-guides" class="tag" data-filter="Collector Guides" style="cursor: pointer;">Collector Guides</a>
+          <a href="?hub=repair-restoration" class="tag" data-filter="Repair & Restoration" style="cursor: pointer;">Repair & Restoration</a>
+          <a href="?hub=retro-tech" class="tag" data-filter="Retro Tech" style="cursor: pointer;">Retro Tech</a>
+          <a href="?hub=specialty-topics" class="tag" data-filter="Specialty Topics" style="cursor: pointer;">Specialty Topics</a>
+        </div>
+      </div>
+      
+      <div id="articles-grid" class="card-grid">
+        <!-- Articles will be populated by JavaScript -->
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-section">
+          <h4>The Collector's Workshop</h4>
+          <p style="opacity: 0.8; font-size: 0.9rem;">Expert guides for vintage and antique collecting, restoration, and mastery.</p>
+        </div>
+        
+        <div class="footer-section">
+          <h4>Explore</h4>
+          <ul>
+            <li><a href="index.html">All Articles</a></li>
+            <li><a href="../hubs/collector-guides.html">Collector Guides</a></li>
+            <li><a href="../hubs/repair-restoration.html">Repair & Restoration</a></li>
+            <li><a href="../hubs/retro-tech.html">Retro Tech</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; 2026 The Collector's Workshop. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../js/articles-data.js"></script>
+  <script src="../js/search.js"></script>
+  <script>
+    // Populate articles grid
+    function populateArticles(hubFilter = null, searchQuery = null) {
+      const grid = document.getElementById('articles-grid');
+      let filtered = articlesData;
+
+      // Get URL params as fallbacks
+      const params = new URLSearchParams(window.location.search);
+      const hubParam = params.get('hub');
+      const searchParam = params.get('q');
+
+      const hubMap = {
+        'collector-guides': 'Collector Guides',
+        'repair-restoration': 'Repair & Restoration',
+        'retro-tech': 'Retro Tech',
+        'specialty-topics': 'Specialty Topics'
+      };
+
+      // Determine which hub to filter by: function arg takes precedence, then URL param
+      const hubToUse = hubFilter || (hubParam && hubParam !== 'all' ? hubMap[hubParam] : null);
+      if (hubToUse) {
+        filtered = filtered.filter(a => a.hub === hubToUse);
+      }
+
+      // Determine search query to use: function arg takes precedence, then URL param
+      const queryToUse = searchQuery || searchParam;
+      if (queryToUse) {
+        const lowerQuery = queryToUse.toLowerCase();
+        filtered = filtered.filter(a => 
+          a.title.toLowerCase().includes(lowerQuery) ||
+          a.subtitle.toLowerCase().includes(lowerQuery) ||
+          a.topic.toLowerCase().includes(lowerQuery) ||
+          (a.keywords || []).some(k => k.toLowerCase().includes(lowerQuery))
+        );
+        document.getElementById('search-box').value = queryToUse;
+      }
+      
+      if (filtered.length === 0) {
+        grid.innerHTML = '<p>No articles found matching your criteria.</p>';
+        return;
+      }
+      
+      grid.innerHTML = filtered.map(article => `
+        <article class="card">
+          <h3><a href="${article.slug}.html">${article.title}</a></h3>
+          <p>${article.subtitle}</p>
+          <div class="card-meta">
+            <span class="tag">${article.hub}</span>
+            <span>${article.topic}</span>
+          </div>
+        </article>
+      `).join('');
+    }
+    
+    // Initialize
+    populateArticles();
+    
+    // Handle filter clicks
+    document.querySelectorAll('[data-filter]').forEach(tag => {
+      tag.addEventListener('click', function(e) {
+        e.preventDefault();
+        const filter = this.getAttribute('data-filter');
+        populateArticles(filter === 'all' ? null : filter);
+      });
+    });
+  </script>
+</body>
+</html>
